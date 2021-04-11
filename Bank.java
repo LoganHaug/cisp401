@@ -95,7 +95,14 @@ public class Bank {
 		// Get the account number, checks for dupes
 		String userAccNo = getUserAccNo(true);
 		// Get balance
-		double userBal = getUserDouble();
+		double userBal = -1;
+		do {
+			userBal = getUserDouble();
+			if (userBal < 1.00) {
+				System.out.println("Please enter an amount greater than $1.00");
+			}
+		} while (userBal < 1.00);
+
 		if (noOfAccs == 0) {
 			accounts[0] = new BankAccount(userAccNo, userBal);
 			currentIndex = 0;
