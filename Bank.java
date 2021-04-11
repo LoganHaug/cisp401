@@ -1,3 +1,5 @@
+// Written using java SE 11
+
 import java.util.Scanner;
 
 public class Bank {
@@ -76,6 +78,8 @@ public class Bank {
 		if (currentIndex >= 0) {
 			System.out.print("Current account selected: ");
 			accounts[currentIndex].printInfo();
+		} else {
+			System.out.println("No account selected");
 		}
 		System.out.print("\nEnter a selection: ");
 	}
@@ -87,37 +91,11 @@ public class Bank {
 		// create new account and return the object so that the array index can point to
 		// the
 		// newly created object
-		// These are reference types because I want to use null as a sentinel value
-		Integer userAccNo = null;
-		Double userBal = null;
-		// Get the account number, checks for dupes
-		while (userAccNo == null) {
-			try {
-				System.out.print("Please enter a valid account number: ");
-				userAccNo = scnr.nextInt();
-				for (int i = 0; i < noOfAccs; i++) {
-					if (userAccNo == accounts[i].getAcc()) {
-						throw new Exception();
-					}
-				}
-			} catch (Exception e) {
-				scnr.nextLine(); // Eat the newline if user enters a non-int
-				userAccNo = null; // Have to reset userAccNo if its a duplicate
-				System.out.println("Error: input was not a number or was a duplicate account ID");
-			}
-		}
-		// Get balance
-		while (userBal == null) {
-			try {
-				System.out.print("\nPlease enter a balance: ");
-				userBal = scnr.nextDouble();
 
-			} catch (Exception e) {
-				System.out.println("Error: input was not a number");
-				scnr.nextLine(); // Eat the newline if user enters a non-double
-			}
-		}
-		scnr.nextLine(); // This is to get rid of the newline for the printmenu
+		// Get the account number, checks for dupes
+		String userAccNo = getUserAccNo(true);
+		// Get balance
+		double userBal = getUserDouble();
 		if (noOfAccs == 0) {
 			accounts[0] = new BankAccount(userAccNo, userBal);
 			currentIndex = 0;
@@ -139,22 +117,11 @@ public class Bank {
 		if (currentIndex == -1) {
 			System.out.println("Please select an account");
 		} else {
-			Double userBal = null;
-			while (userBal == null) {
-				try {
-					System.out.print("\nPlease enter an amount to deposit: ");
-					userBal = scnr.nextDouble();
-
-				} catch (Exception e) {
-					System.out.println("Error: input was not a number");
-					scnr.nextLine(); // Eat the newline if user enters a non-double
-				}
-			}
+			double userBal = getUserDouble();
 			if (userBal <= 0) {
 				System.out.println("\nPlease use the withdraw function instead");
 			}
 			accounts[currentIndex].deposit(userBal);
-			scnr.nextLine(); // Eat the newline
 		}
 	}
 
@@ -163,82 +130,43 @@ public class Bank {
 		if (noOfAccs == 0) {
 			System.out.println("No accounts detected, Input an account first");
 		} else {
-			Integer userAccNo = null;
-			while (userAccNo == null) {
-				try {
-					System.out.print("Please enter a valid account number: ");
-					userAccNo = scnr.nextInt();
-				} catch (Exception e) {
-					scnr.nextLine(); // Eat the newline if user enters a non-int
-					System.out.println("Error: input was not a number");
-				}
-			}
-			scnr.nextLine(); // Eat the newline
-			boolean foundAcc = false;
-			for (int i = 0; i < noOfAccs; i++) {
-				if (accounts[i] != null && userAccNo == accounts[i].getAcc()) {
-					currentIndex = i;
-					foundAcc = true;
-				}
-			}
-			if (!foundAcc) {
+			String userAccNo = getUserAccNo(false);
+			if (!accountExists(accounts[currentIndex].getAcc())) {
 				System.out.println("Didn't find an account with that account number");
+			} else {
+				for (int i = 0; i < noOfAccs; i++) {
+					if (accounts[i] != null && userAccNo.equals(accounts[i].getAcc())) {
+						currentIndex = i;
+					}
+				}
 			}
 		}
-
 	}
 
 	static void closeAcc() {
 		// move last account to the index that needs to be deleted
 		// set last account to null
 		// decrement noOfAccts variable
-		Integer userAccNo = null;
-		while (userAccNo == null) {
-			try {
-				System.out.print("Please enter a valid account number: ");
-				userAccNo = scnr.nextInt();
-			} catch (Exception e) {
-				scnr.nextLine(); // Eat the newline if user enters a non-int
-				System.out.println("Error: input was not a number");
-			}
+		if (noOfAccs == 0) {
+			System.out.println("No accounts stored please input an account");
+		} else {
+			accounts[currentIndex] = accounts[noOfAccs - 1];
+			accounts[noOfAccs - 1] = null;
+			noOfAccs--;
+			currentIndex = -1;
+			System.out.println("Successfully deleted the account");
 		}
-		boolean foundAcc = false;
-		for (int i = 0; i < noOfAccs; i++) {
-			if (accounts[i] != null && accounts[i].getAcc() == userAccNo) {
-				foundAcc = true;
-				accounts[i] = accounts[noOfAccs - 1];
-				accounts[noOfAccs - 1] = null;
-				noOfAccs--;
-				currentIndex = -1;
-				System.out.println("Successfully deleted account ID " + userAccNo);
-			}
-		}
-		if (!foundAcc) {
-			System.out.println("Didn't find an account with that account number");
-		}
-		scnr.nextLine();	// Eat the newline
 	}
 
 	static void withdraw() {
 		if (currentIndex == -1) {
 			System.out.println("Please select an account");
 		} else {
-			Double userBal = null;
-			while (userBal == null) {
-				try {
-					System.out.print("\nPlease enter an amount to deposit: ");
-					userBal = scnr.nextDouble();
-
-				} catch (Exception e) {
-					System.out.println("Error: input was not a number");
-					scnr.nextLine(); // Eat the newline if user enters a non-double
-				}
-			}
-			if (userBal >= 0) {
-				System.out.println("\nPlease use the withdraw function instead");
+			double userBal = getUserDouble();
+			if (userBal <= 0) {
+				System.out.println("\nPlease use the deposit function instead");
 			}
 			accounts[currentIndex].withdraw(userBal);
-			scnr.nextLine(); // Eat the newline
 		}
 	}
 
@@ -246,20 +174,77 @@ public class Bank {
 		// Go through all the accounts using a for loop and display their content
 		if (noOfAccs == 0) {
 			System.out.println("No accounts entered");
-		}
-		for (int i = 0; i < noOfAccs; i++) {
-			if (accounts[i] == null) {
-				break;
+		} else {
+			double currentAssets = 0;
+			for (int i = 0; i < noOfAccs; i++) {
+				if (accounts[i] == null) {
+					break;
+				}
+				System.out.print(1 + i + ")\t");
+				accounts[i].printInfo();
+				currentAssets += accounts[i].getBalance();
 			}
-			System.out.print(1 + i + ")\t");
-			accounts[i].printInfo();
+			System.out.println("\nTotal assets: " + currentAssets);
 		}
+	}
+
+	static String getUserAccNo(boolean checkDuplicate) {
+		String userAccNo = null;
+		while (userAccNo == null) {
+			try {
+				System.out.print("Please enter a valid account number: ");
+				userAccNo = scnr.nextLine();
+				if (!isValidAccNo(userAccNo)) {
+					System.out.println("Account IDs must be 6 digits seperated by a dash. Ex. 123-456");
+					throw new Exception();
+				}
+				if (checkDuplicate) {
+					for (int i = 0; i < noOfAccs; i++) {
+						if (userAccNo.equals(accounts[i].getAcc())) {
+							throw new Exception();
+						}
+					}
+				}
+
+			} catch (Exception e) {
+				userAccNo = null; // Have to reset userAccNo if its a duplicate
+				if (checkDuplicate)
+					System.out.println("Error: input was not a valid account number or was a duplicate account ID");
+				else
+					System.out.println("Error: input was not a valid account number");
+			}
+		}
+		return userAccNo;
+	}
+
+	static double getUserDouble() {
+		Double userBal = null;
+		while (userBal == null) {
+			try {
+				System.out.print("Please enter a balance: ");
+				userBal = scnr.nextDouble();
+
+			} catch (Exception e) {
+				System.out.println("Error: input was not a number");
+				scnr.nextLine(); // Eat the newline if user enters a non-double
+			}
+		}
+		scnr.nextLine(); // Get rid of extra newline
+		return userBal;
+	}
+
+	static boolean accountExists(String accNo) {
+		for (int i = 0; i < noOfAccs; i++) {
+			if (accounts[i] != null && accounts[i].getAcc().equals(accNo)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static void resize() {
 		// resize array. Double the size
 		BankAccount[] temp = new BankAccount[noOfAccs * 2];
-		System.out.println(temp.length);
 		for (int i = 0; i < noOfAccs; i++) {
 			temp[i] = accounts[i];
 		}
@@ -268,19 +253,31 @@ public class Bank {
 			accounts[i] = temp[i];
 		}
 	}
+
+	static boolean isValidAccNo(String id) {
+		if (id.length() == 7 && id.charAt(3) == '-') {
+			try {
+				Integer.parseInt(id.substring(0, 3));
+				Integer.parseInt(id.substring(4, 7));
+				return true;
+			} catch (Exception e) {
+			}
+		}
+		return false;
+	}
 }
 
 class BankAccount {
-	private int accNbr = -1;
+	private String accNbr = null;
 	private double balance = -1;
 
-	BankAccount(int accNbr, double balance) {
+	BankAccount(String accNbr, double balance) {
 		// set instance variables
 		this.accNbr = accNbr;
 		this.balance = balance;
 	}
 
-	int getAcc() {
+	String getAcc() {
 		// return accountNumber
 		return accNbr;
 	}
@@ -305,6 +302,6 @@ class BankAccount {
 	}
 
 	void printInfo() {
-		System.out.format("Account ID: %d    Balance: $%.2f\n", this.accNbr, this.balance);
+		System.out.format("Account ID: %s    Balance: $%.2f\n", this.accNbr, this.balance);
 	}
 }
