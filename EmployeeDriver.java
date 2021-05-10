@@ -53,7 +53,7 @@ class HourlyEmployee extends Employee {
 
     @Override
     public void displayPay(double hoursWorked) {
-        System.out.printf("Pay for %s: $%.2f\n", this.getEmpName(), this.hrlyPay * hoursWorked);
+        System.out.printf("\nPay for %s: $%.2f\n", this.getEmpName(), this.hrlyPay * hoursWorked);
     }
 }
 
@@ -239,7 +239,22 @@ class EmployeeDriver {
         // pay for
         // each employee will be raised by the inputted percentage
         System.out.println();
-        System.out.println("Raise wages: not implemented");
+        if (Employee.empCount < 1) {
+            System.out.println("There are no employees stored");
+        } else {
+            double percentIncrease = getUserDouble("Enter a percentage increase: ");
+            System.out.printf("\n%-15s %s\n", "Name", "New Wages");
+            System.out.println("----------------------------");
+            for (int i = 0; i < Employee.empCount; i++) {
+                employees[i].setHrlyPay((1 + (percentIncrease / 100)) * employees[i].getHrlyPay());
+                if (employees[i] instanceof SalariedEmployee) {
+                    System.out.printf("%-15s $%.2f/year\n", employees[i].getEmpName(),
+                            employees[i].getHrlyPay() * 52 * 40);
+                } else if (employees[i] instanceof HourlyEmployee) {
+                    System.out.printf("%-15s $%.2f/hour\n", employees[i].getEmpName(), employees[i].getHrlyPay());
+                }
+            }
+        }
         System.out.println();
     }
 
